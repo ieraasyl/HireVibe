@@ -1,4 +1,5 @@
 import { Modal, Stack, Text, Divider, Badge, Button } from "@mantine/core";
+import { apiConfig } from "../../../config/api";
 import React from "react";
 import type { Application } from "../model/types";
 
@@ -55,7 +56,7 @@ export const ApplicantDetailsModal: React.FC<Props> = ({ opened, onClose, applic
           {/* Prefer backend download endpoint which streams the stored PDF */}
           <Button
             component="a"
-            href={`/api/applications/${application.id}/resume`}
+            href={`${apiConfig.baseUrl}/api/applications/${application.id}/resume`}
             target="_blank"
             rel="noreferrer"
           >
