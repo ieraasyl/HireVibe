@@ -215,7 +215,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         
         await websocket.send_json({
             "type": "connection",
-            "message": "Connected to chatbot",
+            "message": "Hello. Today I will be assisissting you with your job application process.",
             "session_id": session_id,
             "conversation_id": conversation_id
         })
