@@ -40,13 +40,31 @@ export function Chatbot({ application }: ChatbotProps) {
     };
 
     ws.onmessage = (event) => {
-      const responseText = event.data;
-      if (responseText !== "connected") {
+      const data = event.data;
+
+      // Try to parse JSON payloads sent by the server and extract a
+      // friendly message. Fall back to the raw data string when parsing
+      // fails or no suitable field is present.
+      let content: string;
+      try {
+        const parsed = JSON.parse(String(data));
+        // prefer parsed.message, parsed.content, or parsed.text
+        if (parsed && typeof parsed === "object") {
+          content = (parsed.message && (parsed.message.content || parsed.message.text || parsed.message)) || parsed.content || parsed.text || JSON.stringify(parsed);
+        } else {
+          content = String(parsed);
+        }
+      } catch (e) {
+        content = String(data);
+      }
+
+      // Ignore literal 'connected' ack string from some servers
+      if (content !== "connected") {
         setMessages((prev) => [
           ...prev,
           {
             id: Date.now().toString(),
-            content: responseText,
+            content,
             role: "assistant",
             timestamp: new Date(),
           },
