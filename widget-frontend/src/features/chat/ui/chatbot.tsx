@@ -31,6 +31,12 @@ export function Chatbot({ application }: ChatbotProps) {
     ws.onopen = () => {
       console.log("WebSocket connected for application:", application.id);
       console.log("Application data:", application);
+      // Send initial handshake so server can set up conversation_id and respond
+      try {
+        ws.send(JSON.stringify({ conversation_id: null }));
+      } catch (e) {
+        console.warn("Failed to send initial WebSocket handshake:", e);
+      }
     };
 
     ws.onmessage = (event) => {
