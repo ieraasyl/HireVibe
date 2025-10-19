@@ -135,6 +135,37 @@ async def websocket_endpoint(websocket: WebSocket, application_id: str):
     initial_message = f"Hello {context['first_name']}! I'm here to help clarify your application. Your current matching score is {context['matching_score']}%. Let me ask you a few questions."
     await websocket.send_text(initial_message)
     
+    # Start the dialog by sending the first question immediately
+    session_data = clarifications_store[session_id]
+    requirements = session_data["requirements"]
+    unresolved = [req for req in requirements if req['match_percent'] < 80] if requirements else []
+    
+    if unresolved:
+        current_req = unresolved[0]  # First requirement
+        system_message = f"""You are an HR assistant. Ask ONE short question to clarify this requirement.
+
+Applicant: {context['first_name']} {context['last_name']}
+
+Requirement to clarify:
+- {current_req['vacancy_req']}
+- Current data: {current_req['user_req_data']}
+ 
+Rules:
+1. Ask ONE specific question
+2. Keep it under 20 words
+3. Be direct and professional
+4. Don't mention percentages
+"""
+        messages = [{"role": "system", "content": system_message}]
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            temperature=0.5,
+            max_tokens=100
+        )
+        first_question = response.choices[0].message.content
+        await websocket.send_text(first_question)
+    
     try:
         while True:
             # Receive message from client
