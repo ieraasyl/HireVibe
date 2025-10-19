@@ -1,0 +1,39 @@
+# Core Web Framework
+fastapi[all]
+uvicorn
+
+# AI and PDF Processing
+openai
+pypdf
+python-multipart
+aiofiles
+
+# Data and Configuration
+pydantic
+python-dotenv
+httpx
+
+# Database
+sqlmodel
+asyncpg
+aiosqlite
+
+# Background Jobs
+redis
+taskiq
+taskiq-redis
+
+# Authentication
+PyJWT
+
+# AI Models and LLM
+google-genai
+langchain>=0.1.0
+langchain-core>=0.1.0
+langchain-openai
+langchain-community
+chromadb
+
+# Vector Store and Embeddings
+openai
+sentence-transformers
