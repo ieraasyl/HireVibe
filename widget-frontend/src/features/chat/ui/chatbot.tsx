@@ -8,10 +8,10 @@ import { useState, useEffect, useRef } from "react";
 import { apiConfig } from "../../../config/api";
 
 interface ChatbotProps {
-  applicationId: string;
+  application: any;
 }
 
-export function Chatbot({ applicationId }: ChatbotProps) {
+export function Chatbot({ application }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -25,11 +25,11 @@ export function Chatbot({ applicationId }: ChatbotProps) {
 
   useEffect(() => {
     // Connect to WebSocket with application ID
-    const ws = new WebSocket(apiConfig.endpoints.chatWs(applicationId));
+    const ws = new WebSocket(apiConfig.endpoints.chatWs(application.id));
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log("WebSocket connected for application:", applicationId);
+      console.log("WebSocket connected for application:", application.id);
     };
 
     ws.onmessage = (event) => {
@@ -58,7 +58,7 @@ export function Chatbot({ applicationId }: ChatbotProps) {
     return () => {
       ws.close();
     };
-  }, [applicationId]);
+  }, [application.id]);
 
   const handleSendMessage = (message: string) => {
     const userMessage: Message = {

@@ -3,7 +3,7 @@ import { Chatbot } from "./features/chat/ui/chatbot";
 import apiConfig from "./config/api";
 
 function App() {
-  const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [application, setApplication] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +28,7 @@ function App() {
         const applications = await response.json();
 
         if (applications.length > 0) {
-          setApplicationId(applications[0].id);
+          setApplication(applications[0]);
         } else {
           setError("No applications found");
         }
@@ -51,11 +51,11 @@ function App() {
     return <div className="flex items-center justify-center h-screen text-red-500">Error: {error}</div>;
   }
 
-  if (!applicationId) {
+  if (!application) {
     return <div className="flex items-center justify-center h-screen">No application available</div>;
   }
 
-  return <Chatbot applicationId={applicationId} />;
+  return <Chatbot application={application} />;
 }
 
 export default App;
