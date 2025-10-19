@@ -78,6 +78,7 @@ export function Chatbot({ application }: ChatbotProps) {
       const payload = {
         message: message,
         history: conversationHistory,
+        application_id: application.id,
       };
       wsRef.current.send(JSON.stringify(payload));
     }

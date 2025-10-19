@@ -236,16 +236,19 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 
                 if application_id:
                     application = await session.get(Application, application_id)
-                    if application and application.resume_parsed:
-                        resume_data = application.resume_parsed
-                
-                if vacancy_id:
-                    vacancy = await session.get(Vacancy, vacancy_id)
-                    if vacancy:
-                        vacancy_data = {
-                            'job_title': getattr(vacancy, 'title', ''),
-                            'description': getattr(vacancy, 'description', ''),
-                        }
+                    if application:
+                        if application.resume_parsed:
+                            resume_data = application.resume_parsed
+                        
+                        # Load vacancy data from application's vacancy_id
+                        if application.vacancy_id:
+                            vacancy = await session.get(Vacancy, application.vacancy_id)
+                            if vacancy:
+                                vacancy_data = {
+                                    'job_title': getattr(vacancy, 'title', ''),
+                                    'description': getattr(vacancy, 'description', ''),
+                                    'requirements': getattr(vacancy, 'requirements', []),
+                                }
                 
                 # Get conversation history
                 conversation_history = []
