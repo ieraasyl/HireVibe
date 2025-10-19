@@ -36,6 +36,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         );
       }
     }
+    console.log("Using message.content:", message);
     return message.content ?? "";
   })();
 
