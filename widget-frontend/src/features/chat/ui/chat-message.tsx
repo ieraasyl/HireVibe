@@ -22,6 +22,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
   // Prefer nested `message.message` if present, otherwise use `content`.
   // Support cases where `message.message` is an object with a `content` field
   // or a plain string.
+  console.log("ChatMessage rendering message:", message);
+
   const rawContent = (() => {
     if (message.message) {
       if (typeof message.message === "string") return message.message;
