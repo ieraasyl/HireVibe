@@ -172,13 +172,29 @@ Your questions:
         
         system_prompt = "You are a helpful recruitment assistant. "
         
-        if resume_data and vacancy_data:
-            system_prompt += f"""You have access to the candidate's resume and the job vacancy requirements. 
-            Help the candidate understand how their qualifications match the requirements and provide guidance on interviews or applications.
-            
-            CANDIDATE RESUME: {json.dumps(resume_data, indent=2)}
-            JOB VACANCY: {json.dumps(vacancy_data, indent=2)}
-            """
+        context_info = []
+        if resume_data:
+            if isinstance(resume_data, dict) and "raw_text" in resume_data:
+                context_info.append(f"CANDIDATE RESUME TEXT:\n{resume_data['raw_text']}")
+            else:
+                context_info.append(f"CANDIDATE RESUME DATA:\n{json.dumps(resume_data, indent=2)}")
+        
+        if vacancy_data:
+            context_info.append(f"JOB VACANCY:\n{json.dumps(vacancy_data, indent=2)}")
+        
+        if context_info:
+            system_prompt += f"""You have access to the following information about this candidate and job opportunity. 
+Use this information to provide personalized, helpful responses. You can:
+- Answer questions about the candidate's background and qualifications
+- Explain how their experience matches the job requirements  
+- Provide advice on interview preparation or next steps
+- Help them understand their application status
+
+{"\n\n".join(context_info)}
+"""
+            print(f"🤖 Chatbot has context: resume_data={bool(resume_data)}, vacancy_data={bool(vacancy_data)}")
+        else:
+            print(f"🤖 Chatbot has NO context: resume_data={bool(resume_data)}, vacancy_data={bool(vacancy_data)}")
         
         messages = [
             {"role": "system", "content": system_prompt}

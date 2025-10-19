@@ -235,13 +235,18 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 vacancy_data = None
                 
                 if application_id:
+                    logger.info(f"Loading application data for ID: {application_id}")
                     application = await session.get(Application, application_id)
                     if application:
+                        logger.info(f"Found application: {application.first_name} {application.last_name}")
+                        # Load resume data
                         if application.resume_parsed:
                             resume_data = application.resume_parsed
+                            logger.info(f"Loaded resume data with keys: {list(resume_data.keys()) if resume_data else 'None'}")
                         
                         # Load vacancy data from application's vacancy_id
                         if application.vacancy_id:
+                            logger.info(f"Loading vacancy data for vacancy_id: {application.vacancy_id}")
                             vacancy = await session.get(Vacancy, application.vacancy_id)
                             if vacancy:
                                 vacancy_data = {
@@ -249,6 +254,18 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                                     'description': getattr(vacancy, 'description', ''),
                                     'requirements': getattr(vacancy, 'requirements', []),
                                 }
+                                logger.info(f"Loaded vacancy data: {vacancy.title}")
+                            else:
+                                logger.warning(f"Vacancy not found for ID: {application.vacancy_id}")
+                        else:
+                            logger.warning("Application has no vacancy_id")
+                    else:
+                        logger.warning(f"Application not found for ID: {application_id}")
+                else:
+                    logger.info("No application_id provided in WebSocket message")
+                
+                # Log what data we have
+                logger.info(f"Chat context - resume_data: {bool(resume_data)}, vacancy_data: {bool(vacancy_data)}")
                 
                 # Get conversation history
                 conversation_history = []

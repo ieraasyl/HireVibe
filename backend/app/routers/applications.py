@@ -120,6 +120,16 @@ async def submit_application(
             parser = PDFParserService()
             extracted_text, _meta = parser.extract_text_from_pdf(pdf_bytes)
             if extracted_text:
+                # Store the parsed resume text
+                application.resume_parsed = {
+                    "raw_text": extracted_text,
+                    "metadata": _meta
+                }
+                session.add(application)
+                await session.commit()
+                await session.refresh(application)
+                logger.info(f"✅ Resume parsed and stored: {len(extracted_text)} chars")
+                
                 result = await match_resume_to_requirements(
                     job_requirements=job_requirements_text,
                     resume_text=extracted_text,

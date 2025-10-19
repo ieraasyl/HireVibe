@@ -30,6 +30,7 @@ export function Chatbot({ application }: ChatbotProps) {
 
     ws.onopen = () => {
       console.log("WebSocket connected for application:", application.id);
+      console.log("Application data:", application);
     };
 
     ws.onmessage = (event) => {
@@ -80,6 +81,7 @@ export function Chatbot({ application }: ChatbotProps) {
         history: conversationHistory,
         application_id: application.id,
       };
+      console.log("Sending WebSocket payload:", payload);
       wsRef.current.send(JSON.stringify(payload));
     }
   };
