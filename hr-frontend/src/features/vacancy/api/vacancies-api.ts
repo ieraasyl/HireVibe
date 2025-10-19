@@ -79,3 +79,14 @@ export const createVacancy = async (
     throw error;
   }
 };
+
+export const deleteVacancy = async (id: string): Promise<void> => {
+  try {
+    await axiosClient.delete(`/vacancies/${id}`);
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Axios error deleting vacancy:", error.response?.data || error.message);
+    } else console.error("Error deleting vacancy:", error);
+    throw error;
+  }
+};

@@ -10,6 +10,7 @@ import {
   Loader,
   Stack,
   Text,
+  Modal,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { ArrowLeft, Building2, Clock, DollarSign, Trash2 } from "lucide-react";
@@ -20,11 +21,13 @@ import { useApplications } from "../../features/vacancy/api/use-applications";
 import { ApplicantList } from "../../features/vacancy/ui/applicant-list";
 import { ApplicantDetailsModal } from "../../features/vacancy/ui/applicant-details-modal";
 import { formatPostedDate } from "../../utils/date-formatter";
+import { useDeleteVacancy } from "../../features/vacancy/api/use-vacancy";
 
 export function VacancyInfoPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [opened, { open }] = useDisclosure(false);
+  const deleteMutation = useDeleteVacancy();
 
   const { data: job, isLoading, error } = useVacancy(id!);
   const { data: applications } = useApplications(id);
@@ -196,16 +199,43 @@ export function VacancyInfoPage() {
             <Divider />
 
             {/* Delete Button */}
-            <Button
-              size="lg"
-              radius="md"
-              color="red"
-              leftSection={<Trash2 size={16} />}
-              onClick={open}
-              style={{ alignSelf: "flex-start" }}
-            >
-              Delete Job
-            </Button>
+            <>
+              <Button
+                size="lg"
+                radius="md"
+                color="red"
+                leftSection={<Trash2 size={16} />}
+                onClick={open}
+                style={{ alignSelf: "flex-start" }}
+              >
+                Delete Job
+              </Button>
+
+              <Modal opened={opened} onClose={() => {}} title="Confirm delete">
+                <Text size="sm" mb="md">
+                  Are you sure you want to delete this job and all associated
+                  applications? This action cannot be undone.
+                </Text>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
+                  <Button variant="outline" onClick={() => window.history.back()}>
+                    Cancel
+                  </Button>
+                  <Button
+                    color="red"
+                    onClick={() => {
+                      deleteMutation.mutate(id!, {
+                        onSuccess: () => {
+                          navigate("/");
+                        },
+                      });
+                    }}
+                    loading={deleteMutation.status === "pending"}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </Modal>
+            </>
           </Stack>
         </Card>
       </Stack>
