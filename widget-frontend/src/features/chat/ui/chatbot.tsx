@@ -40,18 +40,58 @@ export function Chatbot({ application }: ChatbotProps) {
     };
 
     ws.onmessage = (event) => {
-      const responseText = event.data;
-      if (responseText !== "connected") {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Date.now().toString(),
-            content: responseText,
-            role: "assistant",
-            timestamp: new Date(),
-          },
-        ]);
+      const raw = event.data;
+
+      // Try to parse the incoming data. Some servers send plain strings
+      // like "connected", others send JSON. In some cases the server
+      // double-stringifies the payload (a JSON string inside a JSON string),
+      // so we attempt parsing twice if needed.
+      const safeParse = (value: any) => {
+        try {
+          const parsed = JSON.parse(value);
+          // If parsing yields a string, try parse again (double-stringified)
+          if (typeof parsed === "string") {
+            try {
+              return JSON.parse(parsed);
+            } catch {
+              return parsed;
+            }
+          }
+          return parsed;
+        } catch {
+          return value;
+        }
+      };
+
+      const parsed = safeParse(raw);
+
+      // If the server sends a simple 'connected' handshake, ignore it.
+      if (parsed === "connected" || (parsed && parsed.type === "connection")) {
+        console.log("WebSocket handshake:", parsed);
+        return;
       }
+
+      // Determine the message content. Support multiple shapes:
+      // - parsed could be a plain string
+      // - parsed could be an object with `message`, `content`, or `text`
+      let content: string;
+      if (typeof parsed === "string") {
+        content = parsed;
+      } else if (parsed && typeof parsed === "object") {
+        content = parsed.message ?? parsed.content ?? parsed.text ?? JSON.stringify(parsed);
+      } else {
+        content = String(parsed);
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          content,
+          role: "assistant",
+          timestamp: new Date(),
+        },
+      ]);
     };
 
     ws.onerror = (error) => {
