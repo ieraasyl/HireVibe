@@ -8,7 +8,7 @@ export const apiConfig = {
   endpoints: {
     health: `${API_URL}/health`,
     chat: '/api/v1/chat',
-    chatWs: `${WS_URL}/api/v1/chat/ws`,
+    chatWs: (sessionId: string) => `${WS_URL}/api/v1/chat/ws/${sessionId}`,
   },
 };
 
