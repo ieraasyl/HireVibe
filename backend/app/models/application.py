@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field, Column
-from sqlalchemy import JSON, TIMESTAMP
+from sqlalchemy import JSON, TIMESTAMP, ForeignKey
 from typing import Optional, Dict, Any
 from datetime import datetime, timezone
 import uuid
@@ -11,7 +11,11 @@ def utc_now():
 class Application(SQLModel, table=True):
     """Job application model"""
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    vacancy_id: str = Field(foreign_key="vacancy.id", index=True)
+    # Explicitly create a Column with a ForeignKey that has ON DELETE CASCADE
+    vacancy_id: Optional[str] = Field(
+        default=None,
+        sa_column=Column(ForeignKey("vacancy.id", ondelete="CASCADE")),
+    )
     first_name: str
     last_name: str
     email: str = Field(index=True)
