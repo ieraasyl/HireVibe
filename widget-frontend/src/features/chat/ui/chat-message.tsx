@@ -25,6 +25,33 @@ export function ChatMessage({ message }: ChatMessageProps) {
   console.log("ChatMessage rendering message:", message);
 
   const rawContent = (() => {
+    const tryParseJson = (value: string) => {
+      try {
+        console.log("Trying to parse JSON:", value);
+        return JSON.parse(value);
+      } catch (e) {
+        return null;
+      }
+    };
+
+    // If the server sent a stringified JSON (e.g. the WebSocket connection
+    // ack), try to parse it and extract a friendly message.
+    if (typeof message.content === "string") {
+      const parsed = tryParseJson(message.content);
+      if (parsed) {
+        // if parsed has a `message` or `content` field, prefer that
+        if (typeof parsed === "object") {
+          return (
+            (parsed.message && (parsed.message.content || parsed.message.text || parsed.message)) ||
+            parsed.content ||
+            parsed.text ||
+            JSON.stringify(parsed)
+          );
+        }
+        return String(parsed);
+      }
+    }
+
     if (message.message) {
       if (typeof message.message === "string") return message.message;
       if (typeof message.message === "object") {
@@ -36,7 +63,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         );
       }
     }
-    console.log("Using message.content:", message);
+
     return message.content ?? "";
   })();
 
