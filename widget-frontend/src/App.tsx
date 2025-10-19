@@ -1,34 +1,61 @@
+import { useEffect, useState } from "react";
 import { Chatbot } from "./features/chat/ui/chatbot";
-
-const applicationData = {
-  id: "a355b545-644d-49ac-afeb-853d50d61eb2",
-  vacancy_id: "5926b170-8c04-4785-8438-94c5c4236d80",
-  first_name: "Gleb",
-  last_name: "Vassyutinskiy",
-  email: "g.v.vass@gmail.com",
-  resume_pdf: "uploads/resumes/4bd87715-35c3-448a-8b5c-5bd6172bd2a1.pdf",
-  resume_parsed: null,
-  matching_score: 50,
-  matching_sections: {
-    requirements: [
-      {
-        vacancy_req: "location: Almaty, Kazakhstan",
-        user_req_data: "Астана, Казахстан",
-        match_percent: 60,
-      },
-      {
-        vacancy_req: "Experience in React: > 3 years",
-        user_req_data:
-          "Разработал клиентскую часть MVP одностраничного адаптивного приложения (SPA) с использованием React.",
-        match_percent: 40,
-      },
-    ],
-    FIT_SCORE: 50,
-  },
-};
+import apiConfig from "./config/api";
 
 function App() {
-  return <Chatbot applicationId={applicationData.id} />;
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchLastApplication = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `${apiConfig.baseUrl}/api/applications?limit=1&skip=0`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch applications: ${response.statusText}`);
+        }
+
+        const applications = await response.json();
+
+        if (applications.length > 0) {
+          setApplicationId(applications[0].id);
+        } else {
+          setError("No applications found");
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch application");
+        console.error("Error fetching last application:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLastApplication();
+  }, []);
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="flex items-center justify-center h-screen text-red-500">Error: {error}</div>;
+  }
+
+  if (!applicationId) {
+    return <div className="flex items-center justify-center h-screen">No application available</div>;
+  }
+
+  return <Chatbot applicationId={applicationId} />;
 }
 
 export default App;
