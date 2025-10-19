@@ -1,10 +1,15 @@
 import { Avatar, Box, Text } from "@mantine/core";
 
+// Accept flexible message shapes coming from the backend. Some payloads
+// nest the text under `message.message` or provide timestamps as strings.
 export interface Message {
   id: string;
-  content: string;
+  // some backends send content directly in `content`, others in `message.message`
+  content?: string;
+  message?: any;
   role: "user" | "assistant";
-  timestamp: Date;
+  // timestamp can be a Date or an ISO string depending on the sender
+  timestamp?: Date | string;
 }
 
 interface ChatMessageProps {
@@ -13,6 +18,35 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === "user";
+
+  // Prefer nested `message.message` if present, otherwise use `content`.
+  // Support cases where `message.message` is an object with a `content` field
+  // or a plain string.
+  const rawContent = (() => {
+    if (message.message) {
+      if (typeof message.message === "string") return message.message;
+      if (typeof message.message === "object") {
+        // common shape: { message: { content: "..." } }
+        return (
+          (message.message.content as string) ||
+          (message.message.text as string) ||
+          JSON.stringify(message.message)
+        );
+      }
+    }
+    return message.content ?? "";
+  })();
+
+  // Normalize timestamp to a Date object. If missing, use `new Date()`.
+  const ts = (() => {
+    if (!message.timestamp) return new Date();
+    if (message.timestamp instanceof Date) return message.timestamp;
+    try {
+      return new Date(message.timestamp as string);
+    } catch (e) {
+      return new Date();
+    }
+  })();
 
   return (
     <Box
@@ -40,13 +74,14 @@ export function ChatMessage({ message }: ChatMessageProps) {
             borderRadius: "12px",
             backgroundColor: isUser ? "#228be6" : "#f1f3f5",
             color: isUser ? "white" : "#212529",
+            whiteSpace: "pre-wrap",
             wordBreak: "break-word",
           }}
         >
-          {message.content}
+          {rawContent}
         </Text>
         <Text size="xs" c="dimmed" mt={4} ta={isUser ? "right" : "left"}>
-          {message.timestamp.toLocaleTimeString([], {
+          {ts.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           })}
