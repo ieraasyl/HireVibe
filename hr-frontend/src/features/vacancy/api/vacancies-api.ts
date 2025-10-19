@@ -1,5 +1,6 @@
 import axios, { isAxiosError } from "axios";
 import type { Job } from "../model/types";
+import type { Application } from "../model/types";
 const apiAddress = import.meta.env.VITE_API_URL;
 console.log(apiAddress); // "https://mybackend.onrender.com"
 
@@ -38,6 +39,26 @@ export const getVacancyById = async (id: string): Promise<Job | null> => {
         error.response?.data || error.message
       );
     } else console.error("Error fetching vacancy:", error);
+    throw error;
+  }
+};
+
+export const getApplicationsByVacancy = async (
+  vacancy_id: string
+): Promise<Application[]> => {
+  try {
+    const response = await axiosClient.get(`/applications`, {
+      params: { vacancy_id },
+    });
+
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error(
+        "Axios error fetching applications:",
+        error.response?.data || error.message
+      );
+    } else console.error("Error fetching applications:", error);
     throw error;
   }
 };

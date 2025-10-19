@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ActionIcon,
   Badge,
@@ -15,6 +16,9 @@ import { ArrowLeft, Building2, Clock, DollarSign, Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 
 import { useVacancy } from "../../features/vacancy/api/use-vacancy";
+import { useApplications } from "../../features/vacancy/api/use-applications";
+import { ApplicantList } from "../../features/vacancy/ui/applicant-list";
+import { ApplicantDetailsModal } from "../../features/vacancy/ui/applicant-details-modal";
 import { formatPostedDate } from "../../utils/date-formatter";
 
 export function VacancyInfoPage() {
@@ -23,6 +27,10 @@ export function VacancyInfoPage() {
   const [opened, { open }] = useDisclosure(false);
 
   const { data: job, isLoading, error } = useVacancy(id!);
+  const { data: applications } = useApplications(id);
+
+  const [selectedApplicant, setSelectedApplicant] = useState<null | any>(null);
+  const [detailsOpened, setDetailsOpened] = useState(false);
 
   const handleBack = () => {
     navigate("/");
@@ -116,6 +124,25 @@ export function VacancyInfoPage() {
             </div>
 
             <Divider />
+
+            {/* Applicants list */}
+            <div>
+              <Text size="lg" fw={600} mb="sm">
+                Applicants
+              </Text>
+              <ApplicantList
+                applications={applications ?? []}
+                onSeeDetails={(app) => {
+                  setSelectedApplicant(app);
+                  setDetailsOpened(true);
+                }}
+              />
+              <ApplicantDetailsModal
+                opened={detailsOpened}
+                onClose={() => setDetailsOpened(false)}
+                application={selectedApplicant}
+              />
+            </div>
 
             {/* Description */}
             <div>

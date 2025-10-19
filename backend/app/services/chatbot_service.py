@@ -183,15 +183,17 @@ Your questions:
             context_info.append(f"JOB VACANCY:\n{json.dumps(vacancy_data, indent=2)}")
         
         if context_info:
-            system_prompt += f"""You have access to the following information about this candidate and job opportunity. 
-Use this information to provide personalized, helpful responses. You can:
-- Answer questions about the candidate's background and qualifications
-- Explain how their experience matches the job requirements  
-- Provide advice on interview preparation or next steps
-- Help them understand their application status
-
-{"\n\n".join(context_info)}
-"""
+            # join context outside of the f-string to avoid backslashes inside the f-string expression
+            joined_context = "\n\n".join(context_info)
+            system_prompt += (
+                "You have access to the following information about this candidate and job opportunity.\n"
+                "Use this information to provide personalized, helpful responses. You can:\n"
+                "- Answer questions about the candidate's background and qualifications\n"
+                "- Explain how their experience matches the job requirements  \n"
+                "- Provide advice on interview preparation or next steps\n"
+                "- Help them understand their application status\n\n"
+                f"{joined_context}"
+            )
             print(f"🤖 Chatbot has context: resume_data={bool(resume_data)}, vacancy_data={bool(vacancy_data)}")
         else:
             print(f"🤖 Chatbot has NO context: resume_data={bool(resume_data)}, vacancy_data={bool(vacancy_data)}")
