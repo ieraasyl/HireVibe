@@ -11,6 +11,7 @@ from app.services.chatbot_service import ChatbotService
 from app.models.application import Application
 from app.models.vacancy import Vacancy
 import json
+import uuid
 import logging
 
 logger = logging.getLogger(__name__)
@@ -213,12 +214,17 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         initial_data = await websocket.receive_json()
         conversation_id = initial_data.get("conversation_id")
         
-        await websocket.send_json({
+        # Build welcome payload and log it so we can verify the deployed server
+        welcome_payload = {
             "type": "connection",
             "message": "Hello. Today I will be assisissting you with your job application process.",
             "session_id": session_id,
-            "conversation_id": conversation_id
-        })
+            "conversation_id": conversation_id,
+            # a unique id to help identify which server instance sent this
+            "welcome_id": str(uuid.uuid4())
+        }
+        logger.info(f"Sending welcome payload: {welcome_payload}")
+        await websocket.send_json(welcome_payload)
         
         while True:
             data = await websocket.receive_json()
